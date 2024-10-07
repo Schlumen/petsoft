@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
+import { addPet } from "@/actions/actions";
 
 type PetFormProps = {
   actionType: "add" | "edit";
@@ -15,33 +16,16 @@ export default function PetForm({
   actionType,
   onFormSubmission,
 }: PetFormProps) {
-  const { handleAddPet, handleEditPet, selectedPet } = usePetContext();
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const fomData = new FormData(event.currentTarget);
-    const pet = {
-      name: fomData.get("name") as string,
-      ownerName: fomData.get("ownerName") as string,
-      imageUrl:
-        (fomData.get("imageUrl") as string) ||
-        "https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png",
-      age: Number(fomData.get("age")),
-      notes: fomData.get("notes") as string,
-    };
-
-    if (actionType === "add") {
-      handleAddPet(pet);
-    } else if (actionType === "edit") {
-      handleEditPet(selectedPet!.id, pet);
-    }
-
-    onFormSubmission();
-  };
+  const { selectedPet } = usePetContext();
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col">
+    <form
+      action={async fromData => {
+        await addPet(fromData);
+        onFormSubmission();
+      }}
+      className="flex flex-col"
+    >
       <div className="space-y-3">
         <div className="space-y-1">
           <Label htmlFor="name">Name</Label>
