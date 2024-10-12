@@ -6,19 +6,17 @@ import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import PetFormBtn from "./pet-form-btn";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { DEFAULT_PET_IMAGE } from "@/lib/constants";
+import { petFormSchema } from "@/lib/validations";
 
 type PetFormProps = {
   actionType: "add" | "edit";
   onFormSubmission: () => void;
 };
 
-type TPetFrom = {
-  name: string;
-  ownerName: string;
-  imageUrl: string;
-  age: number;
-  notes: string;
-};
+type TPetFrom = z.infer<typeof petFormSchema>;
 
 export default function PetForm({
   actionType,
@@ -29,26 +27,23 @@ export default function PetForm({
   const {
     register,
     trigger,
+    getValues,
     formState: { errors, isSubmitting },
-  } = useForm<TPetFrom>();
+  } = useForm<TPetFrom>({
+    resolver: zodResolver(petFormSchema),
+    defaultValues: selectedPet,
+  });
 
   return (
     <form
-      action={async fromData => {
+      action={async () => {
         const result = await trigger();
         if (!result) return;
 
         onFormSubmission();
 
-        const petData = {
-          name: fromData.get("name") as string,
-          ownerName: fromData.get("ownerName") as string,
-          imageUrl:
-            (fromData.get("imageUrl") as string) ||
-            "https://bytegrad.com/course-assets/react-nextjs/pet-placeholder.png",
-          age: Number(fromData.get("age")),
-          notes: fromData.get("notes") as string,
-        };
+        const petData = getValues();
+        petData.imageUrl = petData.imageUrl || DEFAULT_PET_IMAGE;
 
         if (actionType === "add") {
           await handleAddPet(petData);
@@ -61,39 +56,13 @@ export default function PetForm({
       <div className="space-y-3">
         <div className="space-y-1">
           <Label htmlFor="name">Name</Label>
-          <Input
-            id="name"
-            {...register("name", {
-              required: "Name is required",
-              minLength: {
-                value: 3,
-                message: "Name must be at least 3 characters long",
-              },
-              maxLength: {
-                value: 24,
-                message: "Name must be at most 24 characters long",
-              },
-            })}
-          />
+          <Input id="name" {...register("name")} />
           {errors.name && <p className="text-red-500">{errors.name.message}</p>}
         </div>
 
         <div className="space-y-1">
           <Label htmlFor="ownerName">Owner Name</Label>
-          <Input
-            id="ownerName"
-            {...register("ownerName", {
-              required: "Owner name is required",
-              minLength: {
-                value: 3,
-                message: "Owner name must be at least 3 characters long",
-              },
-              maxLength: {
-                value: 24,
-                message: "Owner name must be at most 24 characters long",
-              },
-            })}
-          />
+          <Input id="ownerName" {...register("ownerName")} />
           {errors.ownerName && (
             <p className="text-red-500">{errors.ownerName.message}</p>
           )}
@@ -109,10 +78,7 @@ export default function PetForm({
 
         <div className="space-y-1">
           <Label htmlFor="age">Age</Label>
-          <Input
-            id="age"
-            {...register("age", { required: "Age is required" })}
-          />
+          <Input id="age" {...register("age")} />
           {errors.age && <p className="text-red-500">{errors.age.message}</p>}
         </div>
 
