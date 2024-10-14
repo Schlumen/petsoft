@@ -31,7 +31,7 @@ export default function PetForm({
     formState: { errors, isSubmitting },
   } = useForm<TPetFrom>({
     resolver: zodResolver(petFormSchema),
-    defaultValues: selectedPet,
+    defaultValues: actionType === "edit" ? selectedPet : undefined,
   });
 
   return (
