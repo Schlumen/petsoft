@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { DEFAULT_PET_IMAGE } from "./constants";
 
+export const petIdSchema = z.string().cuid();
+
 export const petFormSchema = z
   .object({
     name: z.string().trim().min(1, { message: "Name is required" }).max(100),
@@ -25,4 +27,11 @@ export const petFormSchema = z
     imageUrl: data.imageUrl || DEFAULT_PET_IMAGE,
   }));
 
-export const petIdSchema = z.string().cuid();
+export type TPetFrom = z.infer<typeof petFormSchema>;
+
+export const authSchema = z.object({
+  email: z.string().email().max(100),
+  password: z.string().max(100),
+});
+
+export type TAuth = z.infer<typeof authSchema>;
